@@ -154,64 +154,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _shader: {fileID: 4800000, guid: dfb87eb383a08544eba39a0dfc361008, type: 3}
   maxDistance: 200
-  maxIterations: 400
+  maxIterations: 208
   accuracy: 0.001
   directionalLight: {fileID: 1568427297}
   lightColor: {r: 1, g: 0.995283, b: 0.995283, a: 0}
   lightIntensity: 1
-  shadowIntensity: 1.33
+  shadowIntensity: 1.28
   shadowDistance: {x: 0.1, y: 30}
-  shadowPenumbra: 2.5
-  aoStepSize: 0.01
+  shadowPenumbra: 5
+  aoStepSize: 0.26
   aoIterations: 1
   aoIntensity: 0.326
   reflectionCount: 1
   reflectionIntensity: 0.351
   envReflIntensity: 0.075
   reflectionCube: {fileID: 8900000, guid: 1331a26d2843a1148a23d5ddc81629dc, type: 3}
-  sphere: {x: 0, y: 5, z: 9.549999, w: 5}
-  sphereSmooth: 3.47
+  sphere: {x: 0, y: 5, z: 10.29, w: 5}
+  sphereSmooth: 5
   degreeRotate: 180
+  nbSpheres: 10
+  sphereSize: 2.9
   groundColor: {r: 1, g: 1, b: 1, a: 0}
-  sphereGradient:
-    serializedVersion: 2
-    key0: {r: 1, g: 0, b: 0, a: 1}
-    key1: {r: 0, g: 0, b: 1, a: 1}
-    key2: {r: 0.16862746, g: 0.34509805, b: 1, a: 0}
-    key3: {r: 1, g: 1, b: 0, a: 0}
-    key4: {r: 0.6784314, g: 0.2485245, b: 0.082352914, a: 0}
-    key5: {r: 0.5943396, g: 0, b: 0.4117945, a: 0}
-    key6: {r: 0.12549017, g: 0.7529412, b: 0.7529412, a: 0}
-    key7: {r: 1, g: 0, b: 0.9345741, a: 0}
-    ctime0: 0
-    ctime1: 8192
-    ctime2: 65535
-    ctime3: 24479
-    ctime4: 32768
-    ctime5: 42212
-    ctime6: 49537
-    ctime7: 57343
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  sphereColors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 0.000015258789, g: 0, b: 0.99998474, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  - {r: 0, g: 0, b: 1, a: 1}
-  colorIntensity: 1.59
+  colorIntensity: 1
 --- !u!81 &625493547
 AudioListener:
   m_ObjectHideFlags: 0
@@ -271,7 +235,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 625493545}
   m_LocalRotation: {x: 0.20608881, y: 0.67640775, z: -0.20608881, w: 0.67640775}
-  m_LocalPosition: {x: -28.44, y: 18.4, z: 0}
+  m_LocalPosition: {x: -28.44, y: 27.18, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
