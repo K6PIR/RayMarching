@@ -80,6 +80,9 @@ public class RayMarchCamera : SceneViewFilter {
     [Range(0, 4)]
     public float colorIntensity;
     
+    [Range(0, 10)]
+    public float  transparencyIntensity;
+    
     private void Awake() {
         _camera = GetComponent<Camera>();
     }
@@ -123,6 +126,7 @@ public class RayMarchCamera : SceneViewFilter {
         _rayMarchMaterial.SetFloat("_EnvReflIntensity", envReflIntensity);
         _rayMarchMaterial.SetTexture("_ReflectionCube", reflectionCube);
         
+        _rayMarchMaterial.SetFloat("_TransparencyIntensity", transparencyIntensity);
         
         RenderTexture.active = destination;
         _rayMarchMaterial.SetTexture("_MainTex", source);
@@ -180,7 +184,7 @@ public class RayMarchCamera : SceneViewFilter {
             sphereMovement[i].y = (Random.value - 0.5f) * 2f;
             sphereMovement[i].z = (Random.value - 0.5f) * 2f;
             sphereMovement[i].Normalize();
-            sphereMovement[i] *= 0.1f;
+            sphereMovement[i] *= 0.05f;
         }
         for (int i = 0; i < spheres.Length; i++) {
             spheres[i].x = (Random.value - 0.5f) * 10f;
@@ -191,9 +195,14 @@ public class RayMarchCamera : SceneViewFilter {
         }
         
         for (int i = 0; i < sphereColors.Length; i++) {
-            sphereColors[i].r = Random.value;
-            sphereColors[i].g = Random.value;
-            sphereColors[i].b = Random.value;
+//            sphereColors[i].r = Random.value;
+//            sphereColors[i].g = Random.value;
+//            sphereColors[i].b = Random.value;
+//            sphereColors[i].a = 1;
+            
+            sphereColors[i].r = 1;
+            sphereColors[i].g = 1;
+            sphereColors[i].b = 1;
             sphereColors[i].a = 1;
         }
 

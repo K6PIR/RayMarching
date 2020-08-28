@@ -1,14 +1,13 @@
 ﻿Shader "K6PIR/RayMarchShader"
 {
-    Properties
-    {
-        _MainTex ("Texture", 2D) = "white" {}
-    }
     SubShader
     {
         // No culling or depth
-        Cull Off ZWrite Off ZTest Always
-
+        Cull Off
+        ZTest Always
+        ZWrite Off
+        Blend SrcAlpha OneMinusSrcAlpha 
+        
         Pass
         {
             CGPROGRAM
@@ -57,6 +56,8 @@
             
             uniform float _AOStepSize, _AOIntensity;
             uniform int _AOIterations;
+            
+            uniform float _TransparencyIntensity;
 
             struct appdata
             {
@@ -97,7 +98,7 @@
            
            float4 distanceField(float3 p)
             {
-                float4 ground = float4(_GroundColor.rgb, sdPlane(p, float3(0,1,0), 1));
+               //float4 ground = float4(_GroundColor.rgb, sdPlane(p - float3(0, -3, 0), float3(0,1,0), 1));
                 
                 float4 sphere = float4(_SphereColors[0].rgb, sdSphere(p - _Spheres[0].xyz, _Spheres[0].w));
                             
@@ -106,17 +107,19 @@
                     sphere = opUS(sphere, sphereAdd, _SphereSmooth);
                 }
                 
-                return opU(sphere, ground);
+                return sphere;
+                //return opU(sphere, ground);
                 //return opUS(sphere, ground, _SphereSmooth);
             }
+                      
            
             float3 getNormal(float3 p)
             {
                 const float2 offset = float2(0.001, 0.0);
                 float3 n = float3(
-                distanceField(p + offset.xyy).w - distanceField(p - offset.xyy).w,
-                distanceField(p + offset.yxy).w - distanceField(p - offset.yxy).w,
-                distanceField(p + offset.yyx).w - distanceField(p - offset.yyx).w
+                    distanceField(p + offset.xyy).w - distanceField(p - offset.xyy).w,
+                    distanceField(p + offset.yxy).w - distanceField(p - offset.yxy).w,
+                    distanceField(p + offset.yyx).w - distanceField(p - offset.yyx).w
                 );
                 
                 return normalize(n);
@@ -178,9 +181,9 @@
                 shadow = max(0.0, pow(shadow, _ShadowIntensity));
                 
                 // Ambient Occlusion
-                float ao = ambientOcclusion(p, n);
+                //float ao = ambientOcclusion(p, n);
                 
-                result = color * light * shadow * ao;
+                result = color * light * shadow;// * ao;
                 
                 return result;
            }
@@ -202,19 +205,40 @@
                     p = ro + rd * t;
                     float4 d = distanceField(p);
                     if (d.w < _Accuracy) {
+                        // shading
                         dColor = d.rgb;
                         hit = true;                       
-
                         break;
                     }
-                    
                     t += d.w;
                 }
-                       
                 return hit;
             }
-           
-
+            
+            float raymarchingDepth(float3 ro, float3 rd, float maxDistance, int maxIterations)
+            {
+                
+                float density = 0;
+                float t = 0;
+                
+                for (int i = 0; i < maxIterations; i++) {
+                                   
+                    if (t > maxDistance)
+                        break;
+                         
+                    ro += rd * 0.01;
+                    float4 d = distanceField(ro);
+                    
+                    if (d.w < _Accuracy) {
+                        density += 0.1;
+                    }
+                    t += 0.01;
+                }
+                
+                return max(0, min(density , 1));
+            }
+            
+                                                           
             fixed4 frag (v2f i) : SV_Target
             {
                 float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
@@ -222,18 +246,19 @@
                 fixed3 col = tex2D(_MainTex, i.uv);
                 float3 rayDirection = normalize(i.ray.xyz);
                 float3 rayOrigin = _WorldSpaceCameraPos;
-                fixed4 result;
-                float3 hitPosition;
-                fixed3 dColor;
-                
+                fixed4 result = fixed4(0, 0, 0, 0);
+                float3 hitPosition = float3(0, 0, 0);
+                fixed3 dColor = fixed3(0, 0, 0);
+               
+                float depthObject = 0;
                 bool hit = raymarching(rayOrigin, rayDirection, depth, _MaxDistance, _MaxIterations, hitPosition, dColor);
+                //bool hit = rayMarchHitDepth(rayOrigin, rayDirection, depth, _MaxDistance, _MaxIterations, hitPosition, dColor);
                 if (hit) {
                     float3 n = getNormal(hitPosition);
                     float3 s = Shading(hitPosition, n, dColor);
                     result = fixed4(s, 1);
-                    result += fixed4(texCUBE(_ReflectionCube, n).rgb * _EnvReflIntensity * _ReflectionIntensity, 0);
-                    
-                    //Reflection
+                    //result += fixed4(texCUBE(_ReflectionCube, n).rgb * _EnvReflIntensity * _ReflectionIntensity, 0);
+                    /*
                     if (_ReflectionCount > 0) {
                         rayDirection = normalize(reflect(rayDirection, n));
                         rayOrigin = hitPosition + (rayDirection * 0.01);
@@ -254,14 +279,29 @@
                             }
                         }
                     }
+                    */
+                    
+                    depthObject = raymarchingDepth(hitPosition, rayDirection, _MaxDistance, _MaxIterations);
+                    //if (depthObject >= 0.5)
+                    //    return fixed4(0,0,1,-1);
+                    result.w = 1 / (1 + _TransparencyIntensity * exp(-depthObject));
+                
                 } 
                 else 
                 {
                     result = fixed4(0, 0, 0, 0);
                 }
-                                      // Shading
-                return fixed4(col * (1.0 - result.w) + result.xyz * result.w, 1.0);
+                           
+                              
+                
+                // Shading
+                
+                //return fixed4(col * (1.0 - result.w) + result.xyz * result.w, 1 / (1 + exp(-depthObject)));
+                if (depthObject != 0)
+                    return fixed4(col * (1.0 - result.w) + result.xyz * result.w, result.w);
+                return fixed4(col * (1.0 - result.w) + result.xyz * result.w, 1);
             }
+            
             ENDCG
         }
     }
